@@ -3,16 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Encuentra recetas deliciosas con los ingredientes que tienes en casa.">
+  <meta name="description" content="Encuentra recetas con los ingredientes que tienes. Escanea tu refrigerador con la camara.">
   <meta name="theme-color" content="#16a34a">
-  <meta property="og:title" content="CocinaFacil - Recetas con tus ingredientes">
-  <meta property="og:description" content="Escribe los ingredientes que tienes y descubre que puedes cocinar.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="icons/icon-512.png">
   <title>CocinaFacil</title>
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="CocinaFacil">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -20,59 +16,105 @@
   <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
-  <header class="header">
-    <div class="header-logo" aria-hidden="true">&#127859;</div>
-    <h1>CocinaFacil</h1>
-    <p>Recetas con los ingredientes que ya tienes</p>
-  </header>
-  <main class="main">
-    <div id="install-banner" class="install-banner" role="alert" aria-live="polite">
-      <p><strong>Instalar CocinaFacil</strong> Usala sin internet, como una app nativa.</p>
-      <button id="install-btn" class="btn btn-primary">Instalar</button>
-      <button id="dismiss-install" class="btn btn-ghost" aria-label="Cerrar">X</button>
-    </div>
-    <section class="card input-panel" aria-label="Ingredientes">
-      <p class="section-title">Mis Ingredientes</p>
-      <div class="input-row" role="group" aria-label="Anadir ingrediente">
-        <input id="ingredient-input" class="ingredient-input" type="text"
-          placeholder="p.ej. pollo, tomate, arroz..." autocomplete="off"
-          autocapitalize="none" spellcheck="false" aria-label="Nombre del ingrediente" maxlength="60">
-        <button id="add-btn" class="btn btn-primary" aria-label="Anadir ingrediente">+ Anadir</button>
-      </div>
-      <div id="tags-container" class="tags-container" aria-label="Lista de ingredientes" aria-live="polite">
-        <span class="tags-empty">Aun no hay ingredientes - anade arriba o usa el escaner</span>
-      </div>
-      <button id="search-btn" class="btn btn-search" disabled aria-label="Buscar recetas">
-        Buscar Recetas
-      </button>
-    </section>
-    <section class="card ocr-panel" aria-label="Escaner de etiquetas">
-      <p class="section-title">Escaner de Ingredientes (OCR)</p>
-      <div id="ocr-drop-area" class="ocr-drop-area" role="button" tabindex="0"
-        aria-label="Subir foto de etiqueta de ingredientes">
-        <div class="ocr-drop-icon" aria-hidden="true">&#128444;</div>
-        <p><strong>Haz clic o arrastra</strong> una foto de tu etiqueta o lista de ingredientes<br>
-          <span style="font-size:.8rem">JPG, PNG, WEBP - el OCR detecta el texto automaticamente</span></p>
-      </div>
-      <input id="ocr-file-input" type="file" accept="image/*" capture="environment" aria-hidden="true">
-      <div id="ocr-progress" class="ocr-progress">
-        <div class="progress-bar-wrap"><div id="progress-bar" class="progress-bar"></div></div>
-        <p id="ocr-status" class="ocr-status" aria-live="polite"></p>
-      </div>
-    </section>
-    <section id="results-section" class="results-section" style="display:none"
-      aria-label="Resultados de recetas" aria-live="polite">
-      <div class="results-header">
-        <p class="section-title" style="margin:0">Recetas Encontradas</p>
-        <span id="result-count" class="results-count"></span>
-      </div>
-      <div id="recipes-grid" class="recipes-grid"></div>
-    </section>
-  </main>
-  <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Detalle de receta">
-    <div class="modal" id="modal-content"></div>
+
+<div id="install-banner" class="install-banner">
+  <p>Instalar CocinaFacil como app</p>
+  <div class="install-actions">
+    <button id="install-btn" class="btn-primary btn-sm">Instalar</button>
+    <button id="dismiss-install" class="btn-ghost btn-sm">X</button>
   </div>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js"></script>
+</div>
+
+<header class="app-header">
+  <span class="header-logo" aria-hidden="true">&#x1F373;</span>
+  <h1>CocinaF&#xE1;cil</h1>
+</header>
+
+<main class="app-main">
+
+  <section class="card scan-card">
+    <button id="camera-btn" class="btn-camera" aria-label="Escanear ingredientes con camara">
+      <span class="camera-icon" aria-hidden="true">&#x1F4F7;</span>
+      <span class="camera-label">Escanear ingredientes</span>
+      <span class="camera-hint">Saca foto de tu refri o despensa y detecto los ingredientes</span>
+    </button>
+    <input id="ocr-input" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1">
+    <div id="ocr-progress" class="ocr-progress">
+      <div class="progress-wrap">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+      <p id="ocr-status" class="ocr-status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="card ingredients-card">
+    <div class="section-header">
+      <h2 class="section-title">Mis ingredientes</h2>
+      <button id="clear-all-btn" class="btn-ghost btn-sm">Limpiar todo</button>
+    </div>
+    <div class="add-row">
+      <input
+        id="ingredient-input"
+        type="text"
+        class="text-input"
+        placeholder="Ej: pollo, tomate, arroz..."
+        autocomplete="off"
+        autocapitalize="none"
+        spellcheck="false"
+        maxlength="60"
+        aria-label="Nombre del ingrediente"
+      >
+      <button id="add-btn" class="btn-add">&#x2B; A&#xF1;adir</button>
+    </div>
+    <ul id="ingredients-list" class="ingredients-list" aria-label="Lista de ingredientes" aria-live="polite"></ul>
+    <p id="empty-hint" class="empty-hint">A&#xF1;ade ingredientes arriba o escanea tu refrigerador &#x261D;</p>
+  </section>
+
+</main>
+
+<div class="search-sticky">
+  <button id="search-btn" class="btn-search" disabled aria-label="Buscar recetas">
+    &#x1F50D; Buscar Recetas
+  </button>
+</div>
+
+<section id="results-section" class="results-section" style="display:none" aria-live="polite">
+  <div class="results-header">
+    <h2 class="section-title">&#x1F37D;&#xFE0F; Recetas</h2>
+    <span id="result-count" class="result-count"></span>
+  </div>
+  <div id="recipes-grid" class="recipes-grid"></div>
+</section>
+
+<div id="qty-overlay" class="qty-overlay" aria-hidden="true">
+  <div id="qty-sheet" class="qty-sheet" role="dialog" aria-label="Cantidad del ingrediente">
+    <div class="qty-handle" aria-hidden="true"></div>
+    <p class="qty-question">
+      &#xBF;Cu&#xE1;nto/a tienes de<br>
+      <strong id="qty-ingredient-name"></strong>?
+    </p>
+    <input
+      id="qty-input"
+      type="text"
+      class="text-input"
+      placeholder="Ej: 500g, 2 pechugas, 1 lata... (opcional)"
+      autocomplete="off"
+      maxlength="40"
+      aria-label="Cantidad del ingrediente"
+    >
+    <div class="qty-actions">
+      <button id="qty-skip" class="btn-ghost">Sin cantidad</button>
+      <button id="qty-confirm" class="btn-primary">&#x2713; A&#xF1;adir</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Detalle de receta">
+  <div id="modal-content" class="modal"></div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
 </body>
 </html>
