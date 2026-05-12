@@ -27,81 +27,151 @@
 
 <header class="app-header">
   <span class="header-logo" aria-hidden="true">&#x1F373;</span>
-  <h1>CocinaF&#xE1;cil</h1>
+  <h1 id="page-title">CocinaF&#xE1;cil</h1>
 </header>
 
 <main class="app-main">
 
-  <section class="card scan-card">
-    <button id="camera-btn" class="btn-camera" aria-label="Escanear ingredientes con camara">
-      <span class="camera-icon" aria-hidden="true">&#x1F4F7;</span>
-      <span class="camera-label">Escanear ingredientes</span>
-      <span class="camera-hint">Saca foto de tu refri o despensa y detecto los ingredientes</span>
-    </button>
-    <input id="ocr-input" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1">
-    <div id="ocr-progress" class="ocr-progress">
-      <div class="progress-wrap">
-        <div id="progress-bar" class="progress-bar"></div>
-      </div>
-      <p id="ocr-status" class="ocr-status" aria-live="polite"></p>
-    </div>
-  </section>
+  <!-- ══ TAB: BUSCAR ══ -->
+  <div id="tab-buscar" class="tab-content active">
 
-  <section class="card ingredients-card">
-    <div class="section-header">
-      <h2 class="section-title">Mis ingredientes</h2>
-      <button id="clear-all-btn" class="btn-ghost btn-sm">Limpiar todo</button>
+    <section class="card scan-card">
+      <button id="camera-btn" class="btn-camera" aria-label="Escanear ingredientes con camara">
+        <span class="camera-icon" aria-hidden="true">&#x1F4F7;</span>
+        <span class="camera-label">Escanear ingredientes</span>
+        <span class="camera-hint">Saca foto de tu refri o despensa y detecto los ingredientes</span>
+      </button>
+      <input id="ocr-input" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1">
+      <div id="ocr-progress" class="ocr-progress">
+        <div class="progress-wrap"><div id="progress-bar" class="progress-bar"></div></div>
+        <p id="ocr-status" class="ocr-status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="card ingredients-card">
+      <div class="section-header">
+        <h2 class="section-title">Mis ingredientes</h2>
+        <button id="clear-all-btn" class="btn-ghost btn-sm">Limpiar todo</button>
+      </div>
+      <div class="add-row">
+        <input id="ingredient-input" type="text" class="text-input"
+          placeholder="Ej: pollo, tomate, arroz..."
+          autocomplete="off" autocapitalize="none" spellcheck="false"
+          maxlength="60" aria-label="Nombre del ingrediente">
+        <button id="add-btn" class="btn-add">&#x2B; A&#xF1;adir</button>
+      </div>
+      <ul id="ingredients-list" class="ingredients-list" aria-label="Lista de ingredientes" aria-live="polite"></ul>
+      <p id="empty-hint" class="empty-hint">A&#xF1;ade ingredientes arriba o escanea tu refrigerador &#x261D;</p>
+    </section>
+
+    <div class="search-bar">
+      <button id="search-btn" class="btn-search" disabled aria-label="Buscar recetas">
+        &#x1F50D; Buscar Recetas
+      </button>
     </div>
-    <div class="add-row">
-      <input
-        id="ingredient-input"
-        type="text"
-        class="text-input"
-        placeholder="Ej: pollo, tomate, arroz..."
-        autocomplete="off"
-        autocapitalize="none"
-        spellcheck="false"
-        maxlength="60"
-        aria-label="Nombre del ingrediente"
-      >
-      <button id="add-btn" class="btn-add">&#x2B; A&#xF1;adir</button>
+
+    <section id="results-section" class="results-section" style="display:none" aria-live="polite">
+      <div class="results-header">
+        <h2 class="section-title">Recetas</h2>
+        <span id="result-count" class="result-count"></span>
+      </div>
+      <div id="recipes-grid" class="recipes-grid"></div>
+    </section>
+
+  </div><!-- /tab-buscar -->
+
+  <!-- ══ TAB: FAVORITAS ══ -->
+  <div id="tab-favoritas" class="tab-content">
+    <section class="card fav-header-card">
+      <div class="section-header">
+        <h2 class="section-title">Mis recetas favoritas</h2>
+        <span id="fav-count" class="result-count"></span>
+      </div>
+    </section>
+    <div id="fav-grid" class="recipes-grid"></div>
+    <div id="fav-empty" class="state-ph" style="display:none">
+      <div class="state-icon">&#x2764;&#xFE0F;</div>
+      <h3>Sin favoritas a&#xFA;n</h3>
+      <p>Cuando encuentres una receta que te guste, toca el coraz&#xF3;n para guardarla aqu&#xED;.</p>
     </div>
-    <ul id="ingredients-list" class="ingredients-list" aria-label="Lista de ingredientes" aria-live="polite"></ul>
-    <p id="empty-hint" class="empty-hint">A&#xF1;ade ingredientes arriba o escanea tu refrigerador &#x261D;</p>
-  </section>
+  </div><!-- /tab-favoritas -->
+
+  <!-- ══ TAB: DESPENSA ══ -->
+  <div id="tab-despensa" class="tab-content">
+
+    <section class="card scan-card">
+      <button id="dsp-camera-btn" class="btn-camera btn-camera-teal" aria-label="Escanear despensa con camara">
+        <span class="camera-icon" aria-hidden="true">&#x1F4F7;</span>
+        <span class="camera-label">Escanear tu despensa</span>
+        <span class="camera-hint">Saca foto y detecto que&#xE9; tienes. Si ya existe algo, te pregunto qu&#xE9; hacer.</span>
+      </button>
+      <input id="dsp-ocr-input" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1">
+      <div id="dsp-ocr-progress" class="ocr-progress">
+        <div class="progress-wrap"><div id="dsp-progress-bar" class="progress-bar progress-bar-teal"></div></div>
+        <p id="dsp-ocr-status" class="ocr-status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="card ingredients-card">
+      <div class="section-header">
+        <h2 class="section-title">Tu despensa</h2>
+        <button id="dsp-clear-btn" class="btn-ghost btn-sm">Limpiar todo</button>
+      </div>
+      <div class="add-row">
+        <input id="dsp-input" type="text" class="text-input"
+          placeholder="Ej: arroz, aceite, sal..."
+          autocomplete="off" autocapitalize="none" spellcheck="false"
+          maxlength="60" aria-label="Nombre del ingrediente">
+        <button id="dsp-add-btn" class="btn-add btn-add-teal">&#x2B; A&#xF1;adir</button>
+      </div>
+      <ul id="despensa-list" class="ingredients-list" aria-label="Lista de despensa" aria-live="polite"></ul>
+      <p id="dsp-empty-hint" class="empty-hint">A&#xF1;ade lo que tienes en tu despensa &#x261D;</p>
+    </section>
+
+    <div class="search-bar">
+      <button id="dsp-search-btn" class="btn-search btn-search-teal" aria-label="Buscar recetas con despensa">
+        &#x1F50D; Buscar con mi despensa
+      </button>
+    </div>
+
+    <section id="dsp-results-section" class="results-section" style="display:none" aria-live="polite">
+      <div class="results-header">
+        <h2 class="section-title">Recetas</h2>
+        <span id="dsp-result-count" class="result-count"></span>
+      </div>
+      <div id="dsp-recipes-grid" class="recipes-grid"></div>
+    </section>
+
+  </div><!-- /tab-despensa -->
 
 </main>
 
-<div class="search-sticky">
-  <button id="search-btn" class="btn-search" disabled aria-label="Buscar recetas">
-    &#x1F50D; Buscar Recetas
+<!-- ══ Bottom navigation ══ -->
+<nav class="bottom-nav" role="tablist" aria-label="Navegacion principal">
+  <button class="nav-btn active" data-tab="buscar" role="tab" aria-selected="true">
+    <span class="nav-icon">&#x1F50D;</span>
+    <span class="nav-label">Buscar</span>
   </button>
-</div>
+  <button class="nav-btn" data-tab="favoritas" role="tab" aria-selected="false">
+    <span class="nav-icon">&#x2764;&#xFE0F;</span>
+    <span class="nav-label">Favoritas</span>
+  </button>
+  <button class="nav-btn" data-tab="despensa" role="tab" aria-selected="false">
+    <span class="nav-icon">&#x1F9FA;</span>
+    <span class="nav-label">Despensa</span>
+  </button>
+</nav>
 
-<section id="results-section" class="results-section" style="display:none" aria-live="polite">
-  <div class="results-header">
-    <h2 class="section-title">&#x1F37D;&#xFE0F; Recetas</h2>
-    <span id="result-count" class="result-count"></span>
-  </div>
-  <div id="recipes-grid" class="recipes-grid"></div>
-</section>
-
+<!-- ══ Qty sheet — buscar ══ -->
 <div id="qty-overlay" class="qty-overlay" aria-hidden="true">
-  <div id="qty-sheet" class="qty-sheet" role="dialog" aria-label="Cantidad del ingrediente">
+  <div class="qty-sheet" role="dialog" aria-label="Cantidad del ingrediente">
     <div class="qty-handle" aria-hidden="true"></div>
     <p class="qty-question">
-      &#xBF;Cu&#xE1;nto/a tienes de<br>
-      <strong id="qty-ingredient-name"></strong>?
+      &#BF;Cu&#xE1;n'o/a tienes de<br><strong id="qty-ingredient-name"></strong>?
     </p>
-    <input
-      id="qty-input"
-      type="text"
-      class="text-input"
+    <input id="qty-input" type="text" class="text-input"
       placeholder="Ej: 500g, 2 pechugas, 1 lata... (opcional)"
-      autocomplete="off"
-      maxlength="40"
-      aria-label="Cantidad del ingrediente"
-    >
+      autocomplete="off" maxlength="40" aria-label="Cantidad del ingrediente">
     <div class="qty-actions">
       <button id="qty-skip" class="btn-ghost">Sin cantidad</button>
       <button id="qty-confirm" class="btn-primary">&#x2713; A&#xF1;adir</button>
@@ -109,6 +179,49 @@
   </div>
 </div>
 
+<!-- ══ Qty sheet — despensa ══ -->
+<div id="dsp-qty-overlay" class="qty-overlay" aria-hidden="true">
+  <div class="qty-sheet" role="dialog" aria-label="Cantidad del ingrediente en despensa">
+    <div class="qty-handle" aria-hidden="true"></div>
+    <p class="qty-question">
+      &#BF;Cu&#xE1;nto/a tienes de<br><strong id="dsp-qty-name"></strong>?
+    </p>
+    <input id="dsp-qty-input" type="text" class="text-input"
+      placeholder="Ej: 1 kg, media bolsa, 3 latas... (opcional)"
+      autocomplete="off" maxlength="40" aria-label="Cantidad del ingrediente">
+    <div class="qty-actions">
+      <button id="dsp-qty-skip" class="btn-ghost">Sin cantidad</button>
+      <button id="dsp-qty-confirm" class="btn-primary btn-primary-teal">&#x2713; A&#xF1;adir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Duplicate detection overlay ══ -->
+<div id="dup-overlay" class="qty-overlay" aria-hidden="true">
+  <div class="qty-sheet" role="dialog" aria-label="Ingrediente duplicado detectado">
+    <div class="qty-handle" aria-hidden="true"></div>
+    <p class="dup-title">Ya tienes <strong id="dup-name"></strong> en tu despensa</p>
+    <div class="dup-info">
+      <div class="dup-row">
+        <span class="dup-label">Tienes actualmente:</span>
+        <span id="dup-current" class="dup-current"></span>
+      </div>
+      <div class="dup-row">
+        <span class="dup-label">Detectado en foto:</span>
+        <span id="dup-detected" class="dup-detected"></span>
+      </div>
+    </div>
+    <p class="dup-question">&#BF;Qu&#xE9; deseas hacer?</p>
+    <div class="dup-actions">
+      <button id="dup-skip" class="btn-ghost dup-btn">Saltar</button>
+      <button id="dup-add" class="btn-dup-add dup-btn">+ Agregar</button>
+      <button id="dup-update" class="btn-primary btn-primary-teal dup-btn">Actualizar</button>
+    </div>
+    <p class="dup-counter"><span id="dup-current-idx">1</span> de <span id="dup-total">1</span></p>
+  </div>
+</div>
+
+<!-- ══ Recipe modal ══ -->
 <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Detalle de receta">
   <div id="modal-content" class="modal"></div>
 </div>
