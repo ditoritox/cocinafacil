@@ -231,7 +231,7 @@ function closeQtySheet(){
 function confirmQty(){
   var name=state.pendingName; var qty=dom.qtyInput.value.trim(); if(!name) return;
   var n=norm(name);
-  if(state.ingred	ents.some(function(i){ return norm(i.name)===n; })){
+  if(state.ingredients.some(function(i){ return norm(i.name)===n; })){
     showToast('"'+n+'" ya está en tu lista'); closeQtySheet(); return;
   }
   state.ingredients.push({id:genId(),name:n,qty:qty});
