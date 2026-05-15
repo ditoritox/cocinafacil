@@ -67,7 +67,8 @@ var state = {
   dspLoading:     false,
   dspRecipes:     [],
   dupQueue:       [],
-  dupIdx:         0
+  dupIdx:         0,
+  ocrTarget:      ''
 };
 
 /* ══════════════════════════════════════════════════════
@@ -119,13 +120,19 @@ function initDom() {
   dom.qtyOverlay        = document.getElementById('qty-overlay');
   dom.qtyIngName        = document.getElementById('qty-ingredient-name');
   dom.qtyInput          = document.getElementById('qty-input');
+  dom.qtyCancel         = document.getElementById('qty-cancel');
   dom.qtySkip           = document.getElementById('qty-skip');
   dom.qtyConfirm        = document.getElementById('qty-confirm');
   dom.dspQtyOverlay     = document.getElementById('dsp-qty-overlay');
   dom.dspQtyName        = document.getElementById('dsp-qty-name');
   dom.dspQtyInput       = document.getElementById('dsp-qty-input');
+  dom.dspQtyCancel      = document.getElementById('dsp-qty-cancel');
   dom.dspQtySkip        = document.getElementById('dsp-qty-skip');
   dom.dspQtyConfirm     = document.getElementById('dsp-qty-confirm');
+  dom.ocrReviewOverlay  = document.getElementById('ocr-review-overlay');
+  dom.ocrReviewList     = document.getElementById('ocr-review-list');
+  dom.ocrReviewConfirm  = document.getElementById('ocr-review-confirm');
+  dom.ocrReviewCancel   = document.getElementById('ocr-review-cancel');
   dom.dupOverlay        = document.getElementById('dup-overlay');
   dom.dupName           = document.getElementById('dup-name');
   dom.dupCurrent        = document.getElementById('dup-current');
@@ -204,6 +211,8 @@ function initBuscar(){
   dom.clearAllBtn.addEventListener('click',clearIngredients);
   dom.searchBtn.addEventListener('click',searchRecipes);
   dom.qtySkip.addEventListener('click',confirmQty);
+  dom.qtyCancel.addEventListener('click',closeQtySheet);
+  dom.qtyOverlay.addEventListener('click',function(e){ if(e.target===dom.qtyOverlay) closeQtySheet(); });
   dom.qtyConfirm.addEventListener('click',confirmQty);
   dom.qtyInput.addEventListener('keydown',function(e){ if(e.key==='Enter') confirmQty(); });
   dom.cameraBtn.addEventListener('click',function(){ dom.ocrInput.click(); });
@@ -289,6 +298,11 @@ function initDespensa(){
   dom.dspSearchBtn.addEventListener('click',buscarConDespensa);
   dom.dspQtySkip.addEventListener('click',confirmDspQty);
   dom.dspQtyConfirm.addEventListener('click',confirmDspQty);
+  dom.dspQtyCancel.addEventListener('click',closeDspQtySheet);
+  dom.dspQtyOverlay.addEventListener('click',function(e){ if(e.target===dom.dspQtyOverlay) closeDspQtySheet(); });
+  dom.ocrReviewConfirm.addEventListener('click',confirmOcrReview);
+  dom.ocrReviewCancel.addEventListener('click',closeOcrReview);
+  dom.ocrReviewOverlay.addEventListener('click',function(e){ if(e.target===dom.ocrReviewOverlay) closeOcrReview(); });
   dom.dspQtyInput.addEventListener('keydown',function(e){ if(e.key==='Enter') confirmDspQty(); });
   dom.dupAdd.addEventListener('click',handleDupAdd);
   dom.dupUpdate.addEventListener('click',handleDupUpdate);
@@ -398,8 +412,7 @@ function processScanFile(file,target){
         var unique=[];
         words.forEach(function(w){ if(unique.indexOf(w)<0) unique.push(w); });
         if(!unique.length){ showToast('No se detectaron ingredientes'); return; }
-        if(target==='buscar') processScanResultsBuscar(unique);
-        else processScanResultsDespensa(unique);
+        showOcrReview(unique, target);
       }).catch(function(){ progressEl.style.display='none'; showToast('Error al analizar la imagen'); });
     }
     if(typeof Tesseract==='undefined'){
@@ -435,6 +448,31 @@ function processScanResultsDespensa(words){
   renderDespensa(); saveDespensa();
   if(newItems.length) showToast('✓ '+newItems.length+' nuevo(s) añadido(s)');
   if(dups.length){ state.dupQueue=dups; state.dupIdx=0; showNextDup(); }
+}
+
+function showOcrReview(words,target){
+  state.ocrTarget=target;
+  dom.ocrReviewList.innerHTML='';
+  words.forEach(function(w){
+    var label=document.createElement('label'); label.className='ocr-word-row';
+    var cb=document.createElement('input'); cb.type='checkbox'; cb.checked=true; cb.value=w;
+    var span=document.createElement('span'); span.textContent=w;
+    label.appendChild(cb); label.appendChild(span);
+    dom.ocrReviewList.appendChild(label);
+  });
+  dom.ocrReviewOverlay.classList.add('open');
+  dom.ocrReviewOverlay.removeAttribute('aria-hidden');
+}
+function closeOcrReview(){
+  dom.ocrReviewOverlay.classList.remove('open');
+  dom.ocrReviewOverlay.setAttribute('aria-hidden','true');
+}
+function confirmOcrReview(){
+  var selected=Array.from(dom.ocrReviewList.querySelectorAll('input:checked')).map(function(cb){ return cb.value; });
+  closeOcrReview();
+  if(!selected.length){ showToast('Sin ingredientes seleccionados'); return; }
+  if(state.ocrTarget==='buscar') processScanResultsBuscar(selected);
+  else processScanResultsDespensa(selected);
 }
 
 /* ══════════════════════════════════════════════════════
