@@ -103,7 +103,7 @@
       <button id="dsp-camera-btn" class="btn-camera btn-camera-teal" aria-label="Escanear despensa con camara">
         <span class="camera-icon" aria-hidden="true">&#x1F4F7;</span>
         <span class="camera-label">Escanear tu despensa</span>
-        <span class="camera-hint">Saca foto y detecto que&#xE9; tienes. Si ya existe algo, te pregunto qu&#xE9; hacer.</span>
+        <span class="camera-hint">Saca foto y detecto qué tienes. Si ya existe algo, te pregunto qué hacer.</span>
       </button>
       <input id="dsp-ocr-input" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1">
       <div id="dsp-ocr-progress" class="ocr-progress">
@@ -167,14 +167,15 @@
   <div class="qty-sheet" role="dialog" aria-label="Cantidad del ingrediente">
     <div class="qty-handle" aria-hidden="true"></div>
     <p class="qty-question">
-      &#BF;Cu&#xE1;n'o/a tienes de<br><strong id="qty-ingredient-name"></strong>?
+      ¿Cuánto/a tienes de<br><strong id="qty-ingredient-name"></strong>?
     </p>
     <input id="qty-input" type="text" class="text-input"
       placeholder="Ej: 500g, 2 pechugas, 1 lata... (opcional)"
       autocomplete="off" maxlength="40" aria-label="Cantidad del ingrediente">
     <div class="qty-actions">
+      <button id="qty-cancel" class="btn-ghost">Cancelar</button>
       <button id="qty-skip" class="btn-ghost">Sin cantidad</button>
-      <button id="qty-confirm" class="btn-primary">&#x2713; A&#xF1;adir</button>
+      <button id="qty-confirm" class="btn-primary">✓ Añadir</button>
     </div>
   </div>
 </div>
@@ -184,14 +185,28 @@
   <div class="qty-sheet" role="dialog" aria-label="Cantidad del ingrediente en despensa">
     <div class="qty-handle" aria-hidden="true"></div>
     <p class="qty-question">
-      &#BF;Cu&#xE1;nto/a tienes de<br><strong id="dsp-qty-name"></strong>?
+      ¿Cuánto/a tienes de<br><strong id="dsp-qty-name"></strong>?
     </p>
     <input id="dsp-qty-input" type="text" class="text-input"
       placeholder="Ej: 1 kg, media bolsa, 3 latas... (opcional)"
       autocomplete="off" maxlength="40" aria-label="Cantidad del ingrediente">
     <div class="qty-actions">
+      <button id="dsp-qty-cancel" class="btn-ghost">Cancelar</button>
       <button id="dsp-qty-skip" class="btn-ghost">Sin cantidad</button>
-      <button id="dsp-qty-confirm" class="btn-primary btn-primary-teal">&#x2713; A&#xF1;adir</button>
+      <button id="dsp-qty-confirm" class="btn-primary btn-primary-teal">✓ Añadir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ OCR review sheet ══ -->
+<div id="ocr-review-overlay" class="qty-overlay" aria-hidden="true">
+  <div class="qty-sheet ocr-sheet" role="dialog" aria-label="Revisar ingredientes detectados">
+    <div class="qty-handle" aria-hidden="true"></div>
+    <p class="qty-question">Detecté esto — marca los que son ingredientes:</p>
+    <div id="ocr-review-list" class="ocr-review-list"></div>
+    <div class="qty-actions">
+      <button id="ocr-review-cancel" class="btn-ghost">Cancelar</button>
+      <button id="ocr-review-confirm" class="btn-primary">✓ Añadir</button>
     </div>
   </div>
 </div>
@@ -211,7 +226,7 @@
         <span id="dup-detected" class="dup-detected"></span>
       </div>
     </div>
-    <p class="dup-question">&#BF;Qu&#xE9; deseas hacer?</p>
+    <p class="dup-question">¿Qué deseas hacer?</p>
     <div class="dup-actions">
       <button id="dup-skip" class="btn-ghost dup-btn">Saltar</button>
       <button id="dup-add" class="btn-dup-add dup-btn">+ Agregar</button>
@@ -228,6 +243,6 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>
