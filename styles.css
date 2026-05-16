@@ -668,3 +668,38 @@ body {
   cursor: pointer;
 }
 .ocr-word-row span { flex: 1; }
+
+
+/* ══ Settings button (header) ══ */
+.btn-settings {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.85);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 6px 8px;
+  margin-left: auto;
+  border-radius: 10px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+.btn-settings:hover, .btn-settings:active { background: rgba(255,255,255,0.15); }
+
+/* ══ Settings sheet ══ */
+.settings-sheet { padding-bottom: 48px; }
+.settings-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; }
+.settings-desc {
+  font-size: 0.83rem;
+  color: var(--muted);
+  line-height: 1.55;
+  margin-bottom: 18px;
+}
+.settings-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 7px;
+  color: var(--text);
+}
+.settings-input { margin-bottom: 4px; font-family: monospace; font-size: 0.88rem; }
