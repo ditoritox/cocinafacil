@@ -13,7 +13,6 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="stylesheet" href="styles.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 
@@ -28,6 +27,7 @@
 <header class="app-header">
   <span class="header-logo" aria-hidden="true">&#x1F373;</span>
   <h1 id="page-title">CocinaF&#xE1;cil</h1>
+  <button id="settings-btn" class="btn-settings" aria-label="Configuración">&#x2699;&#xFE0F;</button>
 </header>
 
 <main class="app-main">
@@ -243,6 +243,24 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-<script src="app.js?v=5"></script>
+<div id="settings-overlay" class="qty-overlay" aria-hidden="true">
+  <div class="qty-sheet settings-sheet" role="dialog" aria-label="Configuración">
+    <div class="qty-handle" aria-hidden="true"></div>
+    <h2 class="settings-title">&#x2699;&#xFE0F; Configuración</h2>
+    <p class="settings-desc">
+      Ingresa tu API key de Anthropic para escanear ingredientes con IA.
+      Consíguela en <strong>console.anthropic.com</strong>. Se guarda solo en tu dispositivo.
+    </p>
+    <label class="settings-label" for="api-key-input">API Key de Anthropic</label>
+    <input id="api-key-input" type="password" class="text-input settings-input"
+      placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
+    <div class="qty-actions">
+      <button id="settings-cancel" class="btn-ghost">Cancelar</button>
+      <button id="settings-save" class="btn-primary">&#x2713; Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js?v=6"></script>
 </body>
 </html>
