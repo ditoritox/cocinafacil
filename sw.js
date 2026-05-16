@@ -1,4 +1,4 @@
-var CACHE = 'cocinafacil-v4';
+var CACHE = 'cocinafacil-v5';
 var PRECACHE = ['./', './index.html', './styles.css', './app.js', './manifest.json'];
 
 self.addEventListener('install', function(e) {
