@@ -7,7 +7,10 @@ var SPOON_KEY  = '25090e97877142bca933ad480c2cb1cf';
 var SPOON_BASE = 'https://api.spoonacular.com';
 var LS_KEY     = 'cocinafacil_v3';
 var LS_FAV     = 'cocinafacil_favoritas';
-var LS_DSP     = 'cocinafacil_despensa';
+var LS_DSP        = 'cocinafacil_despensa';
+var LS_ANTHROPIC  = 'cf_anthropic_key';
+var ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+var ANTHROPIC_MDL = 'claude-haiku-4-5-20251001';
 var ICON_COLORS = ['#16a34a','#ea580c','#2563eb','#9333ea','#dc2626',
                    '#0891b2','#b45309','#0f766e','#7c3aed','#c2410c','#0369a1','#15803d'];
 
@@ -80,6 +83,8 @@ function saveFavoritas(){   try{ localStorage.setItem(LS_FAV, JSON.stringify(sta
 function loadFavoritas(){   try{ var d=localStorage.getItem(LS_FAV); if(d) state.favoritas=JSON.parse(d); }catch(e){} }
 function saveDespensa(){    try{ localStorage.setItem(LS_DSP, JSON.stringify(state.despensa)); }catch(e){} }
 function loadDespensa(){    try{ var d=localStorage.getItem(LS_DSP); if(d) state.despensa=JSON.parse(d); }catch(e){} }
+function getAnthropicKey(){ try{ return localStorage.getItem(LS_ANTHROPIC)||''; }catch(e){ return ''; } }
+function saveAnthropicKey(k){ try{ localStorage.setItem(LS_ANTHROPIC,k.trim()); }catch(e){} }
 
 /* ══════════════════════════════════════════════════════
    DOM REFS
@@ -144,6 +149,11 @@ function initDom() {
   dom.dupTotal          = document.getElementById('dup-total');
   dom.modalOverlay      = document.getElementById('modal-overlay');
   dom.modalContent      = document.getElementById('modal-content');
+  dom.settingsBtn       = document.getElementById('settings-btn');
+  dom.settingsOverlay   = document.getElementById('settings-overlay');
+  dom.apiKeyInput       = document.getElementById('api-key-input');
+  dom.settingsSave      = document.getElementById('settings-save');
+  dom.settingsCancel    = document.getElementById('settings-cancel');
 }
 
 /* ══════════════════════════════════════════════════════
@@ -216,6 +226,7 @@ function initBuscar(){
   dom.qtyConfirm.addEventListener('click',confirmQty);
   dom.qtyInput.addEventListener('keydown',function(e){ if(e.key==='Enter') confirmQty(); });
   dom.cameraBtn.addEventListener('click',function(){ dom.ocrInput.click(); });
+  dom.settingsBtn.addEventListener('click',openSettings);
   dom.ocrInput.addEventListener('change',function(e){
     var f=e.target.files[0]; if(f) processScanFile(f,'buscar'); dom.ocrInput.value='';
   });
@@ -303,6 +314,9 @@ function initDespensa(){
   dom.ocrReviewConfirm.addEventListener('click',confirmOcrReview);
   dom.ocrReviewCancel.addEventListener('click',closeOcrReview);
   dom.ocrReviewOverlay.addEventListener('click',function(e){ if(e.target===dom.ocrReviewOverlay) closeOcrReview(); });
+  dom.settingsSave.addEventListener('click',saveSettings);
+  dom.settingsCancel.addEventListener('click',closeSettings);
+  dom.settingsOverlay.addEventListener('click',function(e){ if(e.target===dom.settingsOverlay) closeSettings(); });
   dom.dspQtyInput.addEventListener('keydown',function(e){ if(e.key==='Enter') confirmDspQty(); });
   dom.dupAdd.addEventListener('click',handleDupAdd);
   dom.dupUpdate.addEventListener('click',handleDupUpdate);
@@ -390,39 +404,94 @@ function handleDupUpdate(){
 function handleDupSkip(){ state.dupIdx++; showNextDup(); }
 
 /* ══════════════════════════════════════════════════════
-   OCR
+   VISION — Claude API
 ══════════════════════════════════════════════════════ */
 function processScanFile(file,target){
+  var key=getAnthropicKey();
+  if(!key){
+    showToast('Configura tu API key de Anthropic ⚙️');
+    openSettings(); return;
+  }
   var progressEl=target==='buscar'?dom.ocrProgress:dom.dspOcrProgress;
   var barEl=target==='buscar'?dom.progressBar:dom.dspProgressBar;
   var statusEl=target==='buscar'?dom.ocrStatus:dom.dspOcrStatus;
-  progressEl.style.display='block'; statusEl.textContent='Analizando imagen…'; barEl.style.width='10%';
+  progressEl.style.display='block'; statusEl.textContent='Analizando con IA…'; barEl.style.width='20%';
   var reader=new FileReader();
   reader.onload=function(e){
     var dataUrl=e.target.result;
-    function runOcr(){
-      Tesseract.recognize(dataUrl,'spa+eng',{
-        logger:function(m){ if(m.status==='recognizing text') barEl.style.width=Math.round(m.progress*100)+'%'; }
-      }).then(function(result){
-        barEl.style.width='100%'; statusEl.textContent='Listo';
-        setTimeout(function(){ progressEl.style.display='none'; },1000);
-        var words=result.data.text.split(/[\s,;:\n\r\t()\[\]{}|\/\\]+/)
-          .map(function(w){ return w.replace(/[^a-zA-Zà-ø]/g,'').trim().toLowerCase(); })
-          .filter(function(w){ return w.length>3; });
-        var unique=[];
-        words.forEach(function(w){ if(unique.indexOf(w)<0) unique.push(w); });
-        if(!unique.length){ showToast('No se detectaron ingredientes'); return; }
-        showOcrReview(unique, target);
-      }).catch(function(){ progressEl.style.display='none'; showToast('Error al analizar la imagen'); });
-    }
-    if(typeof Tesseract==='undefined'){
-      var s=document.createElement('script');
-      s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-      s.onload=runOcr; document.head.appendChild(s);
-    } else { runOcr(); }
+    var match=dataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
+    if(!match){ progressEl.style.display='none'; showToast('Error al leer imagen'); return; }
+    var mediaType=match[1]; var b64=match[2];
+    barEl.style.width='50%'; statusEl.textContent='Enviando a Claude…';
+    fetch(ANTHROPIC_URL,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:ANTHROPIC_MDL,
+        max_tokens:512,
+        messages:[{
+          role:'user',
+          content:[
+            {type:'image',source:{type:'base64',media_type:mediaType,data:b64}},
+            {type:'text',text:'Identifica todos los ingredientes y alimentos que veas en esta imagen. Devuelve SOLO los nombres en español, uno por línea, en minúsculas, sin numeración, sin explicaciones. Si no hay alimentos visibles, responde: ninguno'}
+          ]
+        }]
+      })
+    }).then(function(res){
+      if(!res.ok){
+        progressEl.style.display='none';
+        if(res.status===401){ showToast('API key inválida — revísala en ⚙️'); openSettings(); }
+        else showToast('Error de API: '+res.status);
+        return null;
+      }
+      return res.json();
+    }).then(function(data){
+      if(!data) return;
+      barEl.style.width='100%'; statusEl.textContent='Listo';
+      setTimeout(function(){ progressEl.style.display='none'; },800);
+      var txt=(data.content&&data.content[0]&&data.content[0].text)||'';
+      if(!txt.trim()||txt.trim().toLowerCase()==='ninguno'){
+        showToast('No se detectaron ingredientes'); return;
+      }
+      var words=txt.split('\n')
+        .map(function(w){ return w.replace(/^[-•*\d.):\s]+/,'').trim().toLowerCase(); })
+        .filter(function(w){ return w.length>=2; });
+      var unique=[];
+      words.forEach(function(w){ if(unique.indexOf(w)<0) unique.push(w); });
+      if(!unique.length){ showToast('No se detectaron ingredientes'); return; }
+      showOcrReview(unique,target);
+    }).catch(function(){
+      progressEl.style.display='none'; showToast('Error de conexión');
+    });
   };
   reader.readAsDataURL(file);
 }
+
+/* ══════════════════════════════════════════════════════
+   SETTINGS
+══════════════════════════════════════════════════════ */
+function openSettings(){
+  dom.settingsOverlay.classList.add('open');
+  dom.settingsOverlay.removeAttribute('aria-hidden');
+  dom.apiKeyInput.value=getAnthropicKey();
+  setTimeout(function(){ dom.apiKeyInput.focus(); },100);
+}
+function closeSettings(){
+  dom.settingsOverlay.classList.remove('open');
+  dom.settingsOverlay.setAttribute('aria-hidden','true');
+}
+function saveSettings(){
+  var k=dom.apiKeyInput.value.trim();
+  if(!k){ showToast('Ingresa una API key válida'); return; }
+  saveAnthropicKey(k);
+  closeSettings();
+  showToast('✓ API key guardada');
+}}
 
 function processScanResultsBuscar(words){
   var added=0;
