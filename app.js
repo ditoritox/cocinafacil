@@ -491,7 +491,7 @@ function saveSettings(){
   saveAnthropicKey(k);
   closeSettings();
   showToast('✓ API key guardada');
-}}
+}
 
 function processScanResultsBuscar(words){
   var added=0;
